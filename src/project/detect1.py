@@ -81,6 +81,9 @@ class CameraNode:
            self.position.y=0
            self.position.z=0
            self.objet.publish(self.position)
+           self.surface.data= 0
+           self.surf.publish(self.surface)
+           
             #print("attendre")
         else:
             
