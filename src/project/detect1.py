@@ -17,14 +17,7 @@ class CameraNode:
         # CvBridge is used to convert ROS messages to matrices manipulable by OpenCV
         self.bridge = CvBridge()
 
-        # Initialize the node parameters (couleurs RGB)
-        self.Rmin = int(105)
-        self.Gmin = int(115)
-        self.Bmin = int(30)
-        
-        self.Rmax = int(150)
-        self.Gmax = int(170)
-        self.Bmax = int(70)
+        # Initialize the node parameters
         
         self.position= Point32()
         self.surface= Float32()
@@ -69,9 +62,6 @@ class CameraNode:
         # Blur image
         dest = cv2.blur(hsv_mask, (5,5) )
         
-        ## Création du masque avec inRange. RGB
-        # dest = cv2.inRange(img_bgr, np.array([self.Bmin, self.Gmin, self.Rmin]), np.array( [self.Bmax, self.Gmax, self.Rmax] ) )
-        
         ## Calcul du contours
         contours, hierarchy = cv2.findContours(dest, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         
@@ -84,7 +74,6 @@ class CameraNode:
            self.surface.data= 0
            self.surf.publish(self.surface)
            
-            #print("attendre")
         else:
             
             aireMax = 0
@@ -95,13 +84,11 @@ class CameraNode:
                     aireMax = aireContour
                     iMax=i
             
-            # TODO Rajouter une condition si l'aire est trop petite... 
-            
             # calcul du centre de l'aire
             center = np.mean(contours[iMax], axis=0)
             coordcenter = center[0]
             coordcenter = (int(coordcenter[0]), int(coordcenter[1]))
-            #print(coordcenter)
+
             # Dessin centre
             cv2.circle(img_bgr, coordcenter, 20, (0,0,0), -1)
             
