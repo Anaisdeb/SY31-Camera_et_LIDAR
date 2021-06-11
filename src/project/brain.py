@@ -4,10 +4,11 @@
 """
 Created on Thu Jun  3 15:04:35 2021
 
-@author: merwane
+@authors: merwane and Anais
 """
 from sensor_msgs.msg import LaserScan
 import rospy
+import numpy as np 
 from geometry_msgs.msg import Point32, Twist
 from std_msgs.msg import Float32
 
@@ -24,6 +25,8 @@ d_bright=0
 
 
 pub = None
+coords=None 
+dists=None
 surfa=0
 class Brain:
     def __init__(self):
@@ -52,7 +55,7 @@ class Brain:
         global d_bleft
         global d_bright
         do=min(d_right,d_left,d_fleft,d_fright,d_back,d_bleft,d_bright)
-        d=1.0
+        d=0.5
         print("do :",do)
         
         #print('direction :\n ',msg)
@@ -106,6 +109,22 @@ class Brain:
             
             
     def clbk_laser(self,msg):
+        global coords
+        global dists
+        coords = []
+        dists=[]
+        
+
+        for i, theta in enumerate(np.arange(msg.angle_min, msg.angle_max, msg.angle_increment)):
+        # ToDo: Remove points too close
+            if msg.ranges[i] < 0.1:
+                dists.append(3.5)
+                continue
+
+        # ToDo: Polar to Cartesian transformation
+            coords.append([msg.ranges[i]*np.cos(theta), msg.ranges[i]*np.sin(theta)])
+            dists.append(msg.ranges[i])
+        
         global d_right
         global d_fright
         global d_front
@@ -115,23 +134,23 @@ class Brain:
         global d_bleft
         global d_bright
         
-        if(min(min(msg.ranges[60:120]), 10)>0.1):
-            d_left=min(min(msg.ranges[60:120]), 3.5)
+        if(min(min(dists[60:120]), 10)>0.1):
+            d_left=min(min(dists[60:120]), 3.5)
             print(d_left)
-        if(min(min(min(msg.ranges[0:30]), 3.5),min(min(msg.ranges[330:359]), 3.5))>0.1):
-            d_front=min(min(min(msg.ranges[0:30]), 3.5),min(min(msg.ranges[330:359]), 3.5))
-        if(min(min(msg.ranges[30:59]), 3.5)>0.1):
-            d_fleft=min(min(msg.ranges[30:59]), 3.5)
-        if(min(min(msg.ranges[300:329]), 3.5)>0.1):
-            d_fright=min(min(msg.ranges[300:329]), 3.5)
-        if(min(min(msg.ranges[240:299]), 3.5)>0.1):
-            d_right=min(min(msg.ranges[240:299]), 3.5)
-        if(min(min(msg.ranges[150:210]), 3.5)>0.1):
-            d_back=min(min(msg.ranges[150:210]), 3.5)
-        if(min(min(msg.ranges[120:150]), 3.5)>0.1):
-            d_bleft=min(min(msg.ranges[120:150]), 3.5)
-        if(min(min(msg.ranges[210:240]), 3.5)>0.1):
-            d_bright=min(min(msg.ranges[210:240]), 3.5)
+        if(min(min(min(dists[0:30]), 3.5),min(min(dists[330:359]), 3.5))>0.1):
+            d_front=min(min(min(dists[0:30]), 3.5),min(min(dists[330:359]), 3.5))
+        if(min(min(dists[30:59]), 3.5)>0.1):
+            d_fleft=min(min(dists[30:59]), 3.5)
+        if(min(min(dists[300:329]), 3.5)>0.1):
+            d_fright=min(min(dists[300:329]), 3.5)
+        if(min(min(dists[240:299]), 3.5)>0.1):
+            d_right=min(min(dists[240:299]), 3.5)
+        if(min(min(dists[150:210]), 3.5)>0.1):
+            d_back=min(min(dists[150:210]), 3.5)
+        if(min(min(dists[120:150]), 3.5)>0.1):
+            d_bleft=min(min(dists[120:150]), 3.5)
+        if(min(min(dists[210:240]), 3.5)>0.1):
+            d_bright=min(min(dists[210:240]), 3.5)
             
             
             
