@@ -55,11 +55,11 @@ class Brain:
         global d_bleft
         global d_bright
         do=min(d_right,d_left,d_fleft,d_fright,d_back,d_bleft,d_bright)
-        d=0.5
+        d=0.3
         print("do :",do)
         
         #print('direction :\n ',msg)
-        if(surfa >=50000 and do>d):
+        if(surfa >=50000):
             if(msg.x==1 and msg.y==0 and msg.z==0):#objet à gauche
                 print("objet à gauche \n")
                 cmd.linear.x=0.0
@@ -80,7 +80,7 @@ class Brain:
                 cmd.angular.z=0.0
                 self.cmd.publish(cmd)
         
-        elif(surfa <50000 and do>d):
+        elif(surfa > 20000 and surfa <50000 and do>d):
             if(msg.x==1 and msg.y==0 and msg.z==0):#objet à gauche
                 print("objet à gauche \n")
                 cmd.linear.x=0.2
@@ -97,14 +97,15 @@ class Brain:
                 cmd.angular.z=0.3
                 self.cmd.publish(cmd)
             elif(msg.x==0 and msg.y==0 and msg.z==0):#pas d'objet
-                print("objet à droite")
+                print("pas d'objet")
                 cmd.linear.x=0.0
                 cmd.angular.z=-0.0
                 self.cmd.publish(cmd)
-        elif(do>d):
+        elif(do<d):
             print("obstacle gene impossible de bouger")
             cmd.linear.x=0.0
-            cmd.angular.z=-0.0
+            if (msg.x==0 and msg.y==0 and msg.z==0 or surfa <20000):
+                cmd.angular.z=-0.0
             self.cmd.publish(cmd)
             
             
