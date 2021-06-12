@@ -1,4 +1,11 @@
-#! /usr/bin/env python
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+"""
+Created on Thu Jun  3 15:04:35 2021
+
+@authors: Merwane and Anaïs
+"""
 
 import rospy
 import numpy as np
@@ -18,7 +25,6 @@ class CameraNode:
         self.bridge = CvBridge()
 
         # Initialize the node parameters
-        
         self.position= Point32()
         self.surface= Float32()
         
@@ -34,10 +40,9 @@ class CameraNode:
         # Publisher to the output topics.
         self.pub_img = rospy.Publisher('~output', Image, queue_size=10)
         
-        #Publisher 
-        self.objet=rospy.Publisher('direction', Point32,queue_size=10)
-        self.surf=rospy.Publisher('surf', Float32,queue_size=10)
-        #self.present=rospy.Publisher('present',Float32,queue_size=10)
+        #Publisher for the characteristics of the target
+        self.objet = rospy.Publisher('direction', Point32,queue_size=10)
+        self.surf = rospy.Publisher('surf', Float32,queue_size=10)
 
         # Subscriber to the input topic. self.callback is called when a message is received
         self.subscriber = rospy.Subscriber('/camera/image_rect_color', Image, self.callback)
@@ -56,16 +61,18 @@ class CameraNode:
             return
         
         y, x, z = img_bgr.shape
-        ## Conversion et masque HSV
+        
+        ## Conversion and HSV mask
         img_hsv = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
         hsv_mask = cv2.inRange(img_hsv, self.HSVmin, self.HSVmax )
+        
         # Blur image
         dest = cv2.blur(hsv_mask, (5,5) )
         
-        ## Calcul du contours
+        ## Contour calculation
         contours, hierarchy = cv2.findContours(dest, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         
-        ## Calcul de l'aire maximale
+        ## Calculating the maximum area
         if (contours == []) :
            self.position.x=0
            self.position.y=0
@@ -73,9 +80,7 @@ class CameraNode:
            self.objet.publish(self.position)
            self.surface.data= 0
            self.surf.publish(self.surface)
-           
         else:
-            
             aireMax = 0
             iMax = 0
             for i in range(0, len(contours)) :
@@ -84,44 +89,45 @@ class CameraNode:
                     aireMax = aireContour
                     iMax=i
             
-            # calcul du centre de l'aire
+            # Calculation of the area center
             center = np.mean(contours[iMax], axis=0)
             coordcenter = center[0]
             coordcenter = (int(coordcenter[0]), int(coordcenter[1]))
 
-            # Dessin centre
+            # Drawing center
             cv2.circle(img_bgr, coordcenter, 20, (0,0,0), -1)
             
+            # Positioning of the target in the camera image
             if ( coordcenter[0] < x/3 ) :
                 self.position.x=1
                 self.position.y=0
                 self.position.z=0
                 self.objet.publish(self.position)
-                #print("tourner à gauche")#publisher 
+                #print("tourner à gauche")
             elif ( coordcenter[0] > (2*x)/3 ) :
                 self.position.x=0
                 self.position.y=0
                 self.position.z=1
                 self.objet.publish(self.position)
-                #print("tourner à droite")#publisher
+                #print("tourner à droite")
             else:
                 self.position.x=0
                 self.position.y=1
                 self.position.z=0
                 self.objet.publish(self.position)
-                #print("aller tout droit")#publisher
+                #print("aller tout droit")
             
-            # Dessin des contours
+            # Drawing of contours
             cv2.drawContours(img_bgr, contours, -1, (0,255,0), 3)
             cv2.drawContours(img_bgr, contours[iMax], -1, (255,0,0), 3)
             
-            ## Calcul et dessin du rectangle
+            ## Calculation and drawing of the rectangle
             x, y, w, h = cv2.boundingRect(contours[iMax]) # retourne coordonnée d'un coin et la taille de l'image
             self.surface.data= w*h
             self.surf.publish(self.surface)
             cv2.rectangle(img_bgr, (x,y), (x+w, y+h), (0,0,255),3)
             
-            # Calcul et dessin du convexHull
+            # Calculation and drawing of the convexHull
             hull = []
             hull.append(cv2.convexHull(contours[iMax], False) )
             cv2.drawContours(img_bgr, hull, -1, (255,0,255), 3)
