@@ -23,7 +23,6 @@ d_bleft=0
 d_bright=0
 
 # Initialize the position of the obstacles
-coords=None 
 dists=None
 
 # Initialize the target surface
@@ -129,9 +128,7 @@ class Brain:
             self.cmd.publish(cmd)            
             
     def clbk_laser(self,msg):
-        global coords
         global dists
-        coords = []
         dists=[]
         
         # Recover the distance of the obstacles from the robot
@@ -140,9 +137,6 @@ class Brain:
             if msg.ranges[i] < 0.1:
                 dists.append(3.5)
                 continue
-
-        # Polar to Cartesian transformation
-            coords.append([msg.ranges[i]*np.cos(theta), msg.ranges[i]*np.sin(theta)])
             dists.append(msg.ranges[i])
         
         global d_right
