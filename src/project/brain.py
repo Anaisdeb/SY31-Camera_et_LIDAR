@@ -48,7 +48,7 @@ class Brain:
         cmd=Twist()
         
         print("surfa : \n", surfa)
-        global d_right
+        global d_right  #We could use self.d_right...
         global d_fright
         global d_front
         global d_fleft
@@ -57,10 +57,10 @@ class Brain:
         global d_bleft
         global d_bright
         
-        # Recover the nearest obstacle that is not in front of the robot
+        # Recover the nearest obstacle
         do=min(d_right,d_left,d_fleft,d_fright,d_back,d_bleft,d_bright,d_front)
         
-        # Recover the nearest obstacle 
+        # Recover the nearest obstacle that is not in front of the robot
         d1=min(d_right,d_left,d_fleft,d_fright,d_back,d_bleft,d_bright)
         
         # Initialize the distance considered for an obstacle to interfere with the robot
